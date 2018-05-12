@@ -1,0 +1,42 @@
+.container{}
+.row{
+    min-height: 24px;
+    background-color: #f4f6ff;
+}
+.col-1,
+.col-2,
+.col-3,
+.col-4,
+.col-5,
+.col-6,
+.col-7,
+.col-8,
+.col-9,
+.col-10,
+.col-11,
+.col-12{
+	outline: 1px solid #bbd8ff;
+}
+.selected_el{
+    outline: 1px solid #11b500;
+}
+.selected_el_info{
+	position: absolute;
+	display: none;
+	width: 0;
+	height: 0;
+}
+.selected_el_info span{
+	position: absolute;
+	right: -1px;
+	bottom:1px;
+	display: block;
+	min-width:100px;
+	text-align: right;
+}
+.selected_el_info span i{
+	background-color: #8BC34A;
+	font-size: 11px;
+	padding: 2px 5px;
+	color: #fff;
+}
