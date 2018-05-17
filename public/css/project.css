@@ -13,7 +13,7 @@
 .col-8,
 .col-9,
 .col-10,
-.col-11,
+.col-11,laji
 .col-12{
 	outline: 1px solid #bbd8ff;
 }
@@ -39,4 +39,23 @@
 	font-size: 11px;
 	padding: 2px 5px;
 	color: #fff;
+}
+.autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
+.autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
+.autocomplete-selected { background: #F0F0F0; }
+.autocomplete-suggestions strong { font-weight: normal; color: #3399FF; }
+.autocomplete-group { padding: 2px 5px; }
+.autocomplete-group strong { display: block; border-bottom: 1px solid #000; }
+
+
+.cmdBox{
+    position: fixed;
+    left: 40%;
+    top: 0;
+    background-color: #38f9f7;
+    padding: 5px;
+}
+.cmdBox input{
+    width: 250px;
+    padding: 2px 4px;
 }

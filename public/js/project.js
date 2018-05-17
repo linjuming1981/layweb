@@ -6,13 +6,20 @@ class Project{
 	 * 构造函数
 	 */
 	constructor(){
+
 		this.tpl = {
 			container : '<div class="container"></div>',
 			row : '<div class="row"></div>',
-			col1 : '<div class="col-1"></div>'
+			col1 : '<div class="col-1"></div>',
+			cmdBox : '<div class="cmdBox"><input id="cmd" /></div>'
 		}
 		this.sname = 'selected_el'; // 选中节点class_name
 		this.sinfo = null;  // 选中节点跟随信息box
+		this.cmdBox = null; // 命令工具弹窗
+
+		// 命令行
+		this.cmds = {
+		}
 		
 		this.addRow = this.addRow.bind(this);
 		this.addCol = this.addCol.bind(this);
@@ -24,10 +31,13 @@ class Project{
 		this.reduceColWidth = this.reduceColWidth.bind(this);
 		this.showSelectedInfo = this.showSelectedInfo.bind(this);
 		this.delSelected = this.delSelected.bind(this);
+		this.showCmdBox = this.showCmdBox.bind(this);
+		this.hideCmdBOx = this.hideCmdBOx.bind(this);
 		this.init = this.init.bind(this);
 
 		this.init();
 	}
+
 
 	/**
 	 * 选中某个节点
@@ -296,6 +306,47 @@ class Project{
 
 	}
 
+	/**
+	 * 显示命令行
+	 * @param  {event} e 事件
+	 */
+	showCmdBox(e){
+		e.preventDefault();
+		var _this = this;
+		if(!this.cmdBox){
+			this.cmdBox = $(this.tpl.cmdBox);
+			var cmds = $.map(this.cmds, function (value, key) { return { value: value, data: key }; });
+			this.cmdBox.appendTo('body');
+
+			$('#cmd').autocomplete({
+				lookup : cmds,
+				tabDisabled: false,
+				onSelect : function(suggestion){
+					var fnName = suggestion.data;
+					_this.hideCmdBOx();
+					_this[fnName]();
+				}
+			});
+		}
+		this.cmdBox.show();
+		$('#cmd').focus();
+	}
+
+
+	/**
+	 * 隐藏命令行
+	 * @param  {event} e 事件
+	 */
+	hideCmdBOx(e){
+		if(e){
+			e.preventDefault();
+		}
+		$('#cmd').val('').blur();
+		if(this.cmdBox){
+			this.cmdBox.hide();
+		}
+	}
+
 
 	/**
 	 * 按键绑定
@@ -312,6 +363,8 @@ class Project{
 		doc.bind('keydown.Ctrl_right', _this.addColWidth );
 		doc.bind('keydown.Ctrl_left', _this.reduceColWidth );
 		doc.bind('keydown.d', _this.delSelected );
+		doc.bind('keydown.Ctrl_Shift_p', _this.showCmdBox );
+		doc.bind('keydown.esc', _this.hideCmdBOx );
 
 	}
 
@@ -325,4 +378,4 @@ class Project{
 
 }
 
-var pj = new Project;
+var pj = new Project();
