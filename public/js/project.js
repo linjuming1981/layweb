@@ -34,6 +34,7 @@ class Project{
 		this.reduceColWidth = this.reduceColWidth.bind(this);
 		this.showSelectedInfo = this.showSelectedInfo.bind(this);
 		this.clone = this.clone.bind(this);
+		this.addSpace = this.addSpace.bind(this);
 		this.delSelected = this.delSelected.bind(this);
 		this.showCmdBox = this.showCmdBox.bind(this);
 		this.hideCmdBOx = this.hideCmdBOx.bind(this);
@@ -313,6 +314,35 @@ class Project{
 
 
 	/**
+	 * 添加margin或padding
+	 * @param {string} type      类型 m|p
+	 * @param {string} direction 方向 t|b|l|r
+	 * @param {event} e      事件
+	 */
+	addSpace(type,direction,e){
+		e.preventDefault();
+		var el_s = this.select();
+		var cur_i = -1;
+		var cur_cn = '';
+		for(var i=0; i<=5; i++){
+			var class_name = type+direction+'-'+i; // ml2
+			if(el_s.hasClass(class_name)){
+				cur_cn = class_name;
+				cur_i = i;
+				break;
+			}
+		}
+		if(cur_cn) el_s.removeClass(cur_cn);
+		var next_i = cur_i+1;
+		var next_cn = type+direction+'-'+next_i;
+		if(next_i<=5){
+			el_s.addClass(next_cn);
+		}
+		this.showSelectedInfo();
+	}
+
+
+	/**
 	 * 显示选中节点的id和class信息
 	 */
 	showSelectedInfo(){
@@ -526,6 +556,15 @@ class Project{
 		doc.bind('keydown.d', _this.delSelected );
 		doc.bind('keydown.Ctrl_Shift_p', _this.showCmdBox );
 		doc.bind('keydown.esc', _this.hideCmdBOx );
+		doc.bind('keydown.Shift_right',function(e){_this.addSpace('m','r',e)});
+		doc.bind('keydown.Shift_left',function(e){_this.addSpace('m','l',e)});
+		doc.bind('keydown.Shift_up',function(e){_this.addSpace('m','t',e)});
+		doc.bind('keydown.Shift_down',function(e){_this.addSpace('m','b',e)});
+		doc.bind('keydown.Ctrl_Shift_right',function(e){_this.addSpace('p','r',e)});
+		doc.bind('keydown.Ctrl_Shift_left',function(e){_this.addSpace('p','l',e)});
+		doc.bind('keydown.Ctrl_Shift_up',function(e){_this.addSpace('p','t',e)});
+		doc.bind('keydown.Ctrl_Shift_down',function(e){_this.addSpace('p','b',e)});
+
 
 	}
 
