@@ -31,7 +31,7 @@
 	right: -1px;
 	bottom:1px;
 	display: block;
-	min-width:100px;
+	min-width:500px;
 	text-align: right;
 }
 .selected_el_info span i{

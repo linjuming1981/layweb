@@ -18,3 +18,6 @@ Route::get('/', function () {
 Route::get('/project', 'ProjectController@index');
 Route::get('/project/{project}', 'ProjectController@projectDetail');
 Route::get('/project/{project}/{page}', 'ProjectController@pageDetail');
+Route::get('/widget/{widget}', 'WidgetController@pageDetail');
+Route::get('/widget', 'WidgetController@index');
+Route::get('/widget/{widget}', 'WidgetController@detail');

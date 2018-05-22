@@ -19,6 +19,7 @@ class Project{
 
 		// 命令行
 		this.cmds = {
+			'' : 'add:card',
 		}
 		
 		this.addRow = this.addRow.bind(this);
@@ -27,13 +28,17 @@ class Project{
 		this.select = this.select.bind(this);
 		this.toggleNext = this.toggleNext.bind(this);
 		this.togglePrev = this.togglePrev.bind(this);
+		this.toggleParent = this.toggleParent.bind(this);
+		this.toggleChild = this.toggleChild.bind(this);
 		this.addColWidth = this.addColWidth.bind(this);
 		this.reduceColWidth = this.reduceColWidth.bind(this);
 		this.showSelectedInfo = this.showSelectedInfo.bind(this);
+		this.clone = this.clone.bind(this);
 		this.delSelected = this.delSelected.bind(this);
 		this.showCmdBox = this.showCmdBox.bind(this);
 		this.hideCmdBOx = this.hideCmdBOx.bind(this);
 		this.init = this.init.bind(this);
+		this.add = this.add.bind(this);
 
 		this.init();
 	}
@@ -88,6 +93,7 @@ class Project{
 	 * @param  {event} e 事件
 	 */
 	toggleNext(e){
+		e.preventDefault();
 		var el = $('.'+this.sname);
 		var next = el.next();
 		if(next[0]){
@@ -96,7 +102,9 @@ class Project{
 			var first = el.siblings().first();
 			this.select(first);
 		}
-		e.preventDefault();
+		if(this.select().is('link,script,.selected_el_info')){
+			return this.toggleNext(e);
+		}
 	}
 
 	/**
@@ -104,6 +112,7 @@ class Project{
 	 * @param  {event} e 事件
 	 */
 	togglePrev(e){
+		e.preventDefault();
 		var el = $('.'+this.sname);
 		var prev = el.prev();
 		if(prev[0]){
@@ -112,7 +121,46 @@ class Project{
 			var last = el.siblings().last();
 			this.select(last);
 		}
+		if(this.select().is('link,script,.selected_el_info')){
+			return this.togglePrev(e);
+		}
+	}
+
+	/**
+	 * 切换到父节点
+	 * @param  {event} e 事件
+	 */
+	toggleParent(e){
 		e.preventDefault();
+		var el = this.select();
+		var el_p = el.parent();
+		if(el_p.is('body')) return;
+		this.select(el_p);
+	}
+
+	/**
+	 * 切换到子节点
+	 * @param  {event} e 事件
+	 */
+	toggleChild(e){
+		e.preventDefault();
+		var el = this.select();
+		var el_c = el.children().eq(0);
+		if(!el_c[0]) return;
+		this.select(el_c);
+	}
+
+	/**
+	 * 克隆节点
+	 * @param  {event} e 事件
+	 */
+	clone(e){
+		e.preventDefault();
+		var el = this.select();
+		if(!el) return;
+		var el_clone = el.clone();
+		el_clone.insertAfter(el);
+		this.select(el_clone);
 	}
 
 	/**
@@ -241,18 +289,26 @@ class Project{
 		if(!el_s) return;
 		if(el_s.is('body')) return;
 
-		var prev = el_s.prev();
-		var next = el_s.next();
-		var parent = el_s.parent();
-
-		if(next[0]){
-			this.select(next);
-		}else if(prev[0]){
-			this.select(prev);
+		if(!this.hasSiblings(el_s)){
+			this.toggleParent(e);
 		}else{
-			this.select(parent);
+			this.toggleNext(e);
 		}
 		el_s.remove();
+	}
+
+
+	/**
+	 * 是否含有兄弟节点
+	 * @param  {dom}  el 
+	 * @return {Boolean}  
+	 */
+	hasSiblings(el){
+		var len = $(el).siblings().filter(function(i,n){
+			return !$(n).is('link,script,.selected_el_info')
+		}).length;
+		if(len) return true;
+		return false;
 	}
 
 
@@ -266,6 +322,7 @@ class Project{
 			this.sinfo.appendTo('body');
 		}
 		var el_s = $('.'+this.sname);
+		if(!el_s[0]) return;		
 
 		// class="hello world" => .hello.world
 		var class_str = el_s.attr('class') || '';
@@ -297,7 +354,7 @@ class Project{
 		var x = offset.left + el_s.outerWidth();
 		var y = offset.top;
 		if(y<30){
-			y += el_s.height() + this.sinfo.children().outerHeight()+2;
+			y += el_s.outerHeight() + this.sinfo.children().outerHeight()+2;
 		}
 		this.sinfo.css({
 			left : x+'px',
@@ -315,16 +372,25 @@ class Project{
 		var _this = this;
 		if(!this.cmdBox){
 			this.cmdBox = $(this.tpl.cmdBox);
-			var cmds = $.map(this.cmds, function (value, key) { return { value: value, data: key }; });
+			// var cmds = $.map(this.cmds, function (value, key) { return { value: value, data: key }; });
 			this.cmdBox.appendTo('body');
 
-			$('#cmd').autocomplete({
-				lookup : cmds,
+			var $cmd = $('#cmd');
+
+			$cmd.autocomplete({
+				// autoSelectFirst: true,
 				tabDisabled: false,
+				lookup : [
+					{value:"add:widget:card", data:"add"},
+					// {value:"add:card", data:"add1"}
+				],
+				onHint : function(hint){
+					// console.log(hint)
+				},
 				onSelect : function(suggestion){
-					var fnName = suggestion.data;
 					_this.hideCmdBOx();
-					_this[fnName]();
+					// var fnName = suggestion.data;
+					// _this[fnName]();
 				}
 			});
 		}
@@ -347,6 +413,99 @@ class Project{
 		}
 	}
 
+	/**
+	 * arguments 转 数组
+	 * @param  {arguments} args 
+	 * @return {array}      
+	 */
+	argsToArr(args){
+		var argsArr = [];
+		for(var i=0; i<args.length; i++){
+			argsArr.push(args[i]);
+		}
+		return argsArr;
+	}
+
+	/**
+	 * 插入，新增节点
+	 */
+	add(){
+		var args = this.argsToArr(arguments);
+		var type = arguments[0]; // widget
+		var fn = 'add'+ type.toString()[0].toUpperCase() + type.toString().slice(1); // addWidget
+		return this[fn].apply(this, args.splice(1));
+	}
+
+
+	/**
+	 * 添加组件
+	 */
+	addWidget(type){
+		console.log(type);
+		var _this = this;
+		$.ajax({
+			url : ROOT_URL+'/widget/'+type,
+			success : function(html){
+				_this.select().html(html);
+			}
+		})
+	}
+
+
+	/**
+	 * 备份节点内部html
+	 * @param  {dom} el 节点
+	 */
+	storeHistory(el){
+		var el = $(el);
+		var history = el.data('history');
+		var history_ix = el.data('history_ix');
+		if(!history) history = [];
+		if(!history_ix) history_ix=0;
+
+		history.splice(history_ix+1); // 如果当期状态在中间，切除数组后面的记录
+
+		var html = el.html();
+		history.push(html);
+		el.data('history', history);
+		el.data('history_ix', history.length-1);
+	}
+
+	/**
+	 * 回滚节点内部html
+	 * @param  {dom} el 节点
+	 * @param  {int} step 步数
+	 */
+	loadHistory(el, step){
+		var el = $(el);
+		var history = el.data('history');
+		if(!history || history.length==0 ) return;
+		var ix = el.data('history_ix');
+
+		var ix_n = el+step;
+		if(ix_n<0 || ix_n>=history.length) return;
+		el.data('history_ix', ix_n);
+		el.html(history[ix_n]);
+	}
+
+
+	/**
+	 * 点击选中事件
+	 */
+	bindClick(){
+		var _this=this;
+		$(document).click(function(e){
+			e.preventDefault();
+			var el = e.target || e.srcElement;
+			el = $(el);
+			if(el.is('body')) return;
+			if(el.closest('.selected_el_info')[0]) return;
+			_this.select(el);
+		})
+	}
+
+
+
 
 	/**
 	 * 按键绑定
@@ -357,11 +516,13 @@ class Project{
 
 		doc.bind('keydown.r', _this.addRow );
 		doc.bind('keydown.i', _this.addCol1 );
-		doc.bind('keydown.tab', _this.toggleNext );
-		doc.bind('keydown.down', _this.toggleNext );
-		doc.bind('keydown.up', _this.togglePrev );
+		doc.bind('keydown.left', _this.togglePrev );
+		doc.bind('keydown.right', _this.toggleNext );
+		doc.bind('keydown.up', _this.toggleParent );
+		doc.bind('keydown.down', _this.toggleChild );
 		doc.bind('keydown.Ctrl_right', _this.addColWidth );
 		doc.bind('keydown.Ctrl_left', _this.reduceColWidth );
+		doc.bind('keydown.c', _this.clone );
 		doc.bind('keydown.d', _this.delSelected );
 		doc.bind('keydown.Ctrl_Shift_p', _this.showCmdBox );
 		doc.bind('keydown.esc', _this.hideCmdBOx );
@@ -373,6 +534,7 @@ class Project{
 	 */
 	init(){
 		this.bindKeys();
+		this.bindClick();
 	}
 
 
