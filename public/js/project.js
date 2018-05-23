@@ -16,6 +16,7 @@ class Project{
 		this.sname = 'selected_el'; // 选中节点class_name
 		this.sinfo = null;  // 选中节点跟随信息box
 		this.cmdBox = null; // 命令工具弹窗
+		this.cmdBox_isOpen = false;  // 当前窗口是否打开
 
 		// 命令行
 		this.cmds = {
@@ -37,7 +38,7 @@ class Project{
 		this.addSpace = this.addSpace.bind(this);
 		this.delSelected = this.delSelected.bind(this);
 		this.showCmdBox = this.showCmdBox.bind(this);
-		this.hideCmdBOx = this.hideCmdBOx.bind(this);
+		this.hideCmdBox = this.hideCmdBox.bind(this);
 		this.init = this.init.bind(this);
 		this.add = this.add.bind(this);
 
@@ -399,6 +400,7 @@ class Project{
 	 */
 	showCmdBox(e){
 		e.preventDefault();
+		if(this.cmdBox_isOpen) return;
 		var _this = this;
 		if(!this.cmdBox){
 			this.cmdBox = $(this.tpl.cmdBox);
@@ -418,7 +420,7 @@ class Project{
 					// console.log(hint)
 				},
 				onSelect : function(suggestion){
-					_this.hideCmdBOx();
+					_this.hideCmdBox();
 					// var fnName = suggestion.data;
 					// _this[fnName]();
 				}
@@ -426,6 +428,7 @@ class Project{
 		}
 		this.cmdBox.show();
 		$('#cmd').focus();
+		this.cmdBox_isOpen = true;
 	}
 
 
@@ -433,14 +436,17 @@ class Project{
 	 * 隐藏命令行
 	 * @param  {event} e 事件
 	 */
-	hideCmdBOx(e){
+	hideCmdBox(e){
 		if(e){
 			e.preventDefault();
 		}
+		if(!this.cmdBox_isOpen) return;
+		
 		$('#cmd').val('').blur();
 		if(this.cmdBox){
 			this.cmdBox.hide();
 		}
+		this.cmdBox_isOpen = false;
 	}
 
 	/**
@@ -555,7 +561,8 @@ class Project{
 		doc.bind('keydown.c', _this.clone );
 		doc.bind('keydown.d', _this.delSelected );
 		doc.bind('keydown.Ctrl_Shift_p', _this.showCmdBox );
-		doc.bind('keydown.esc', _this.hideCmdBOx );
+		doc.bind('keyup.space', _this.showCmdBox );
+		doc.bind('keydown.esc', _this.hideCmdBox );
 		doc.bind('keydown.Shift_right',function(e){_this.addSpace('m','r',e)});
 		doc.bind('keydown.Shift_left',function(e){_this.addSpace('m','l',e)});
 		doc.bind('keydown.Shift_up',function(e){_this.addSpace('m','t',e)});

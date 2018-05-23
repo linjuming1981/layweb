@@ -54,6 +54,7 @@
 			return;
 		}
 
+
 		handleObj.handler = function( event ) {
 			// Don't fire in text-accepting inputs that we didn't directly bind to
 			// important to note that $.fn.prop is only available on jquery 1.6+
