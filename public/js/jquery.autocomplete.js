@@ -371,6 +371,22 @@
         onKeyPress: function (e) {
             var that = this;
 
+            console.log(e.which);
+
+            // space 关闭命令弹窗 linjuming
+            if(event.which==32){ // space
+                pj.cmdBox_isClosing = true;
+                pj.hideCmdBox();
+                return;
+            }
+
+            // 回车确认运行命令
+            if(event.which==13){ // enter
+                pj.hideCmdBox();
+                pj.runCmd(that.currentValue);
+            }
+
+
             // If suggestions are hidden and user presses arrow down, display suggestions:
             if (!that.disabled && !that.visible && e.which === keys.DOWN && that.currentValue) {
                 that.suggest();
@@ -380,6 +396,7 @@
             if (that.disabled || !that.visible) {
                 return;
             }
+
 
             switch (e.which) {
                 case keys.ESC:
@@ -431,12 +448,7 @@
         onKeyUp: function (e) {
             var that = this;
 
-            // space 关闭命令弹窗 linjuming
-            // console.log(event.which);
-            if($(event.target).is('#cmd') && event.which==32){ // space
-                pj.hideCmdBox();
-            }
-
+            
             if (that.disabled) {
                 return;
             }

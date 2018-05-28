@@ -40,6 +40,13 @@
 	padding: 2px 5px;
 	color: #fff;
 }
+.selected_el_info span i b{
+    font-weight: normal;
+}
+.selected_el_info span i b.class{
+    color: #c9eeff;
+}
+.selected_el_info span i b.id{}
 .autocomplete-suggestions { border: 1px solid #999; background: #FFF; overflow: auto; }
 .autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; }
 .autocomplete-selected { background: #F0F0F0; }

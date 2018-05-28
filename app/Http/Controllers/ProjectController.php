@@ -45,5 +45,10 @@ class ProjectController extends Controller
 		return view('project/pageDetail', $data);
 	}
 
+
+	public function htmlNodes(Request $request){
+		return view('project/htmlNodes');
+	}
+
 	
 }

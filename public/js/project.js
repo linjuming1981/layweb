@@ -17,12 +17,10 @@ class Project{
 		this.sinfo = null;  // 选中节点跟随信息box
 		this.cmdBox = null; // 命令工具弹窗
 		this.cmdBox_isOpen = false;  // 当前窗口是否打开
-
-		// 命令行
-		this.cmds = {
-			'' : 'add:card',
-		}
+		this.cmdBox_isClosing = false;  // 当前窗口在关闭中
+		this.nodes = null; // html节点
 		
+		// 函数绑定
 		this.addRow = this.addRow.bind(this);
 		this.addCol = this.addCol.bind(this);
 		this.addCol1 = this.addCol1.bind(this);
@@ -41,6 +39,7 @@ class Project{
 		this.hideCmdBox = this.hideCmdBox.bind(this);
 		this.init = this.init.bind(this);
 		this.add = this.add.bind(this);
+		this.switchHtmlNode = this.switchHtmlNode.bind(this);
 
 		this.init();
 	}
@@ -364,6 +363,7 @@ class Project{
 			});
 			class_str = class_arr.join('');
 			class_str = class_str.replace('.selected_el','');
+			class_str = '<b class="class">'+class_str+'</b>';
 		}
 
 		// id="good boy" => #good#boy
@@ -374,10 +374,13 @@ class Project{
 				id_arr[i] = '#'+n;
 			});
 			id_str = id_arr.join('');
+			id_str = '<b class="id">'+id_str+'</b>';
 		}
 
-		// #good#boy.hello.world
-		this.sinfo.children().children().html(id_str+class_str);
+		// div#good#boy.hello.world
+		var tagName = el_s[0].tagName.toLowerCase();
+		tagName = '<b>'+tagName+'</b>';
+		this.sinfo.children().children().html(tagName+id_str+class_str);
 		this.sinfo.show();
 
 		// 偏移位置
@@ -399,8 +402,14 @@ class Project{
 	 * @param  {event} e 事件
 	 */
 	showCmdBox(e){
-		e.preventDefault();
+		if(e){
+			e.preventDefault();
+		}
 		if(this.cmdBox_isOpen) return;
+		if(this.cmdBox_isClosing){
+			this.cmdBox_isClosing = false;
+			return;
+		}
 		var _this = this;
 		if(!this.cmdBox){
 			this.cmdBox = $(this.tpl.cmdBox);
@@ -411,14 +420,13 @@ class Project{
 
 			$cmd.autocomplete({
 				// autoSelectFirst: true,
-				tabDisabled: false,
+				tabDisabled: true,
 				lookup : [
-					{value:"add:widget:card", data:"add"},
-					// {value:"add:card", data:"add1"}
+					{value:"add:widget:card"},
 				],
-				onHint : function(hint){
-					// console.log(hint)
-				},
+				// onHint : function(hint){
+				// 	console.log(hint)
+				// },
 				onSelect : function(suggestion){
 					_this.hideCmdBox();
 					// var fnName = suggestion.data;
@@ -526,6 +534,68 @@ class Project{
 
 
 	/**
+	 * 执行命令
+	 * @param  {string} cmd 命令
+	 */
+	runCmd(cmd){
+
+		// 添加节点
+		if(cmd.indexOf(':') == -1){
+			var el_s = this.select();
+			if(!el_s) return;
+			var node = this.getHtmlNode(cmd,0);
+			if(node){
+				node.data('node_ix',0).appendTo(el_s);
+			}
+		}
+
+	}
+
+	/**
+	 * 切换相同html节点
+	 */
+	switchHtmlNode(e){
+		e.preventDefault();
+		var el_s = this.select();
+		if(!el_s) return;
+		var tagName = el_s[0].tagName;
+		var node_0 = this.getHtmlNode(tagName, 0);
+		if(!node_0[0]) return;
+		
+		var node_ix = el_s.data('node_ix');
+		if(!node_ix) node_ix=0;
+		node_ix ++;
+
+		var node = this.getHtmlNode(tagName, node_ix);
+		if(node[0]){
+			el_s.replaceWith(node);
+			this.select(node);
+			node.data('node_ix', node_ix);
+		}else{
+			el_s.replaceWith(node_0);
+			this.select(node_0);
+			node.data('node_ix', 0);
+		}
+	}
+
+
+	getHtmlNode(tagName, i){
+		if(!this.nodes){
+			var _this = this;
+			$.ajax({
+				url : ROOT_URL+'/htmlNodes',
+				async : false,
+				success : function(html){
+					_this.nodes = $('<div>'+html+'</div>');
+				}
+			})
+		}
+		var nodes = this.nodes.children(tagName);
+		return nodes.eq(i).clone();
+	}
+
+
+	/**
 	 * 点击选中事件
 	 */
 	bindClick(){
@@ -536,6 +606,7 @@ class Project{
 			el = $(el);
 			if(el.is('body')) return;
 			if(el.closest('.selected_el_info')[0]) return;
+			if(el.closest('.cmdBox')[0]) return;
 			_this.select(el);
 		})
 	}
@@ -571,7 +642,7 @@ class Project{
 		doc.bind('keydown.Ctrl_Shift_left',function(e){_this.addSpace('p','l',e)});
 		doc.bind('keydown.Ctrl_Shift_up',function(e){_this.addSpace('p','t',e)});
 		doc.bind('keydown.Ctrl_Shift_down',function(e){_this.addSpace('p','b',e)});
-
+		doc.bind('keydown.tab', _this.switchHtmlNode);
 
 	}
 

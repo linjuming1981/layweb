@@ -21,3 +21,4 @@ Route::get('/project/{project}/{page}', 'ProjectController@pageDetail');
 Route::get('/widget/{widget}', 'WidgetController@pageDetail');
 Route::get('/widget', 'WidgetController@index');
 Route::get('/widget/{widget}', 'WidgetController@detail');
+Route::get('/htmlNodes', 'ProjectController@htmlNodes');
